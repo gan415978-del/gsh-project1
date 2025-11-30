@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Альбом - Game Screen Hub</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%234683d9'/%3E%3Ctext x='50' y='70' font-family='Arial, sans-serif' font-size='45' font-weight='bold' fill='white' text-anchor='middle'%3EGSH%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .album-view-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+      }
+
+      .album-view-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: var(--bg-card);
+        padding: 20px;
+        border-radius: 12px;
+      }
+
+      .album-view-info h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 8px;
+      }
+
+      .album-view-meta {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+        color: var(--text-secondary);
+      }
+
+      .album-view-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn-upload {
+        background-color: var(--accent-blue);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+      }
+
+      .btn-upload:hover {
+        background-color: var(--accent-blue-hover);
+      }
+
+      .btn-subscribe {
+        background-color: transparent;
+        color: var(--accent-blue);
+        border: 2px solid var(--accent-blue);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+
+      .btn-subscribe:hover {
+        background-color: var(--accent-blue);
+        color: white;
+      }
+
+      .btn-subscribe.subscribed {
+        background-color: var(--accent-blue);
+        color: white;
+        border-color: var(--accent-blue);
+      }
+
+      .btn-subscribe.subscribed i {
+        color: gold;
+      }
+
+      .btn-set-cover {
+        background: var(--bg-body);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .btn-set-cover:hover {
+        background: var(--bg-card-hover);
+      }
+
+      .screenshots-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: flex-start;
+      }
+
+      .screenshot-card {
+        position: relative;
+        border-radius: 0px;
+        overflow: hidden;
+        cursor: pointer;
+        background: var(--bg-body);
+        transition: opacity 0.2s;
+        flex-shrink: 0;
+      }
+
+      .screenshot-card:hover {
+        opacity: 0.9;
+      }
+
+      .screenshot-card.selected {
+        outline: 3px solid var(--accent-blue);
+      }
+
+      .screenshot-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .screenshot-actions {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .screenshot-card:hover .screenshot-actions {
+        opacity: 1;
+      }
+
+      .screenshot-action-btn {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-left: 5px;
+        transition: background 0.2s;
+      }
+
+      .screenshot-action-btn:hover {
+        background: rgba(231, 76, 60, 0.9);
+      }
+
+      .screenshot-checkbox {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        display: none;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .screenshot-check-icon {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 28px;
+        height: 28px;
+        background: var(--accent-blue);
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        animation: checkmarkPop 0.2s ease;
+      }
+
+      @keyframes checkmarkPop {
+        0% {
+          transform: scale(0);
+        }
+        50% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .screenshot-card.selection-mode {
+        cursor: pointer;
+      }
+
+      .screenshot-card.selection-mode .screenshot-check-icon {
+        display: flex;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+      }
+
+      .screenshot-card.selection-mode.selected .screenshot-check-icon {
+        background: var(--accent-blue);
+      }
+
+      .screenshots-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+      }
+
+      .screenshots-empty i {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.3;
+        display: block;
+      }
+
+      /* Drag and Drop Zone */
+      .drag-drop-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        z-index: 2500;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s;
+      }
+
+      .drag-drop-overlay.active {
+        display: flex;
+      }
+
+      .drag-drop-zone {
+        background: var(--bg-card);
+        border: 3px dashed var(--accent-blue);
+        border-radius: 20px;
+        padding: 60px 80px;
+        text-align: center;
+        max-width: 500px;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+          border-color: var(--accent-blue);
+        }
+        50% {
+          transform: scale(1.02);
+          border-color: #5fa3ff;
+        }
+      }
+
+      .drag-drop-zone i {
+        font-size: 64px;
+        color: var(--accent-blue);
+        margin-bottom: 20px;
+        display: block;
+      }
+
+      .drag-drop-zone h3 {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 10px;
+      }
+
+      .drag-drop-zone p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 0;
+      }
+
+      .upload-progress {
+        background: var(--bg-card);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .upload-progress.active {
+        display: block;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: var(--bg-body);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: var(--accent-blue);
+        transition: width 0.3s;
+      }
+
+      /* Gallery Viewer Modal - Fullscreen */
+      .gallery-viewer-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.98);
+        z-index: 4000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .gallery-viewer-modal.open {
+        display: flex;
+      }
+
+      .gallery-viewer-close {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: transparent;
+        border: none;
+        color: #fff;
+        width: 50px;
+        height: 50px;
+        font-size: 36px;
+        cursor: pointer;
+        transition: 0.2s;
+        z-index: 4001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .gallery-viewer-close:hover {
+        color: #ccc;
+        transform: scale(1.2);
+      }
+
+      .gallery-image-container {
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .gallery-viewer-image {
+        max-width: 100%;
+        max-height: 90vh;
+        object-fit: contain;
+        border-radius: 8px;
+      }
+
+      .gallery-counter {
+        position: absolute;
+        bottom: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .gallery-nav-btn {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #fff;
+        width: 60px;
+        height: 60px;
+        font-size: 40px;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 4001;
+      }
+
+      .gallery-nav-btn:hover {
+        color: #ccc;
+        transform: translateY(-50%) scale(1.2);
+      }
+
+      .gallery-nav-btn.prev {
+        left: 30px;
+      }
+
+      .gallery-nav-btn.next {
+        right: 30px;
+      }
+
+      .gallery-nav-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+
+      .gallery-nav-btn:disabled:hover {
+        transform: translateY(-50%);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-container">
+        <a href="index.html" class="logo">GSH</a>
+        <button class="btn-back-header" id="btn-back-header" onclick="window.location.href='albums.html'" style="display: flex;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="header-actions">
+          <div class="search-wrapper" id="search-wrapper">
+            <input type="text" class="search-input-dynamic" id="header-search-input" placeholder="Поиск..." />
+            <button class="search-btn-icon" id="search-trigger">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </div>
+          <button class="notification-bell" id="notification-bell" style="display: none;">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+          </button>
+          <div id="auth-container" style="display: flex; align-items: center; gap: 15px"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="notifications-modal" id="notifications-modal">
+      <div class="notifications-header">
+        <h3>Уведомления</h3>
+        <button class="mark-all-read-btn" id="mark-all-read-btn">Отметить все как прочитанные</button>
+      </div>
+      <div class="notifications-list" id="notifications-list"></div>
+    </div>
+
+    <div class="album-view-container">
+      <div class="album-view-header">
+        <div class="album-view-info">
+          <h1 id="album-title">Альбом</h1>
+          <div class="album-view-meta">
+            <span><i class="fa-regular fa-image"></i> <span id="screenshot-count">0</span> фото</span>
+            <span><i class="fa-regular fa-eye"></i> <span id="album-views">0</span> просмотров</span>
+          </div>
+        </div>
+        <div class="album-view-actions">
+          <button class="btn-subscribe" id="btn-subscribe-album" style="display: none;">
+            <i class="fa-regular fa-star"></i>
+            <span id="subscribe-text">Подписаться</span>
+          </button>
+          <div id="owner-actions" style="display: none;">
+            <button class="btn-set-cover" id="btn-set-cover" style="display: none;">Установить обложку</button>
+            <button class="btn-upload" id="btn-upload">
+              <i class="fa-solid fa-upload"></i>
+              Загрузить фото
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="upload-progress" id="upload-progress">
+        <div style="margin-bottom: 10px; color: var(--text-main);">Загрузка файлов...</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Панель управления -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" id="controls-panel">
+        <div style="display: flex; gap: 10px;">
+          <button id="btn-select-mode" style="background: var(--accent-blue); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: none; font-weight: 500; transition: all 0.2s;">
+            Выбрать
+          </button>
+          <button id="btn-cancel-selection" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 8px; cursor: pointer; display: none; font-weight: 500; transition: all 0.2s;">
+            Отменить
+          </button>
+          <button id="btn-delete-selected" style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: none; font-weight: 500; transition: all 0.2s;">
+            Удалить выбранные
+          </button>
+        </div>
+        <div style="display: flex; gap: 5px; align-items: center;">
+          <span style="color: var(--text-secondary); font-size: 14px; margin-right: 10px;">Сортировка:</span>
+          <button id="sort-new" class="sort-btn active" style="background: var(--accent-blue); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s;">Новые</button>
+          <button id="sort-old" class="sort-btn" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s;">Старые</button>
+        </div>
+      </div>
+
+      <div id="screenshots-grid" class="screenshots-grid"></div>
+
+      <div id="screenshots-empty" class="screenshots-empty" style="display: none;">
+        <i class="fa-regular fa-images"></i>
+        <h3>В альбоме пока нет скриншотов</h3>
+        <p>Загрузите первый скриншот</p>
+      </div>
+    </div>
+
+    <input type="file" id="file-input" accept="image/*" multiple style="display: none;" />
+
+    <!-- Drag and Drop Overlay -->
+    <div class="drag-drop-overlay" id="drag-drop-overlay">
+      <div class="drag-drop-zone">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <h3>Перетащите файлы сюда</h3>
+        <p>Или отпустите, чтобы загрузить (макс. 15 файлов, до 24 МБ каждый)</p>
+      </div>
+    </div>
+
+    <!-- Gallery Viewer -->
+    <div class="gallery-viewer-modal" id="gallery-viewer">
+      <button class="gallery-viewer-close" onclick="closeGallery()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <button class="gallery-nav-btn prev" id="gallery-prev" onclick="navigateGallery(-1)">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <div class="gallery-image-container">
+        <img id="gallery-image" class="gallery-viewer-image" src="" alt="" />
+        <div class="gallery-counter" id="gallery-counter">1 / 1</div>
+      </div>
+      <button class="gallery-nav-btn next" id="gallery-next" onclick="navigateGallery(1)">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+      let currentAlbumId = null;
+      let currentUserId = null;
+      let albumOwnerId = null;
+      let selectedScreenshots = new Set();
+      let currentSort = 'new';
+      let selectionMode = false;
+      let galleryScreenshots = [];
+      let currentGalleryIndex = 0;
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+          window.location.href = 'index.html';
+          return;
+        }
+
+        currentUserId = user.id;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        currentAlbumId = urlParams.get('id');
+
+        if (!currentAlbumId) {
+          alert('ID альбома не указан');
+          window.location.href = 'albums.html';
+          return;
+        }
+
+        await loadAlbumData();
+        await loadScreenshots();
+      });
+
+      async function loadAlbumData() {
+        try {
+          const res = await fetch(`/api/album/${currentAlbumId}`);
+          if (!res.ok) throw new Error('Failed to load album');
+
+          const album = await res.json();
+
+          document.getElementById('album-title').textContent = album.title;
+          document.getElementById('screenshot-count').textContent = album.screenshot_count || 0;
+          document.getElementById('album-views').textContent = album.views || 0;
+
+          albumOwnerId = album.user_id;
+
+          // Увеличиваем просмотры
+          await fetch(`/api/albums/${currentAlbumId}/view`, { method: 'POST' });
+
+          // Показываем кнопки управления если это владелец
+          if (currentUserId && currentUserId == albumOwnerId) {
+            document.getElementById('owner-actions').style.display = 'flex';
+          } else if (currentUserId) {
+            // Показываем кнопку подписки для чужих альбомов
+            document.getElementById('btn-subscribe-album').style.display = 'flex';
+            // Проверяем статус подписки
+            await checkSubscriptionStatus();
+          }
+        } catch (e) {
+          console.error('Error loading album:', e);
+        }
+      }
+
+      // Проверить статус подписки на альбом
+      async function checkSubscriptionStatus() {
+        try {
+          const res = await fetch(`/api/albums/${currentAlbumId}/subscription-status?userId=${currentUserId}`);
+          if (!res.ok) return;
+
+          const data = await res.json();
+          const btn = document.getElementById('btn-subscribe-album');
+          const icon = btn.querySelector('i');
+          const text = document.getElementById('subscribe-text');
+
+          if (data.subscribed) {
+            btn.classList.add('subscribed');
+            icon.className = 'fa-solid fa-star';
+            text.textContent = 'Подписан';
+          } else {
+            btn.classList.remove('subscribed');
+            icon.className = 'fa-regular fa-star';
+            text.textContent = 'Подписаться';
+          }
+        } catch (e) {
+          console.error('Error checking subscription:', e);
+        }
+      }
+
+      // Обработчик кнопки подписки
+      document.getElementById('btn-subscribe-album').addEventListener('click', async () => {
+        if (!currentUserId) {
+          alert('Необходимо войти в аккаунт');
+          return;
+        }
+
+        const btn = document.getElementById('btn-subscribe-album');
+        const isSubscribed = btn.classList.contains('subscribed');
+        const icon = btn.querySelector('i');
+        const text = document.getElementById('subscribe-text');
+
+        try {
+          if (isSubscribed) {
+            // Отписаться
+            const res = await fetch(`/api/albums/${currentAlbumId}/subscribe`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: currentUserId })
+            });
+
+            if (!res.ok) throw new Error('Failed to unsubscribe');
+
+            btn.classList.remove('subscribed');
+            icon.className = 'fa-regular fa-star';
+            text.textContent = 'Подписаться';
+          } else {
+            // Подписаться
+            const res = await fetch(`/api/albums/${currentAlbumId}/subscribe`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: currentUserId })
+            });
+
+            if (!res.ok) throw new Error('Failed to subscribe');
+
+            btn.classList.add('subscribed');
+            icon.className = 'fa-solid fa-star';
+            text.textContent = 'Подписан';
+          }
+        } catch (e) {
+          console.error('Error toggling subscription:', e);
+          alert('Ошибка при изменении подписки');
+        }
+      });
+
+      // Функция для вычисления размеров изображений в адаптивной сетке (Google Photos style)
+      function calculateImageLayout(screenshots, containerWidth = 1200, targetRowHeight = 300) {
+        const rows = [];
+        let currentRow = [];
+        let currentRowWidth = 0;
+        const gap = 4;
+
+        screenshots.forEach((screenshot, index) => {
+          const aspectRatio = screenshot.width && screenshot.height ? screenshot.width / screenshot.height : 16/9;
+          const scaledWidth = targetRowHeight * aspectRatio;
+
+          if (currentRowWidth + scaledWidth + (currentRow.length * gap) <= containerWidth || currentRow.length === 0) {
+            currentRow.push({ ...screenshot, index, scaledWidth, aspectRatio });
+            currentRowWidth += scaledWidth;
+          } else {
+            // Нормализуем текущую строку
+            const totalGaps = (currentRow.length - 1) * gap;
+            const availableWidth = containerWidth - totalGaps;
+            const scale = availableWidth / currentRowWidth;
+
+            currentRow.forEach(img => {
+              img.width = Math.floor(img.scaledWidth * scale);
+              img.height = Math.floor(targetRowHeight * scale);
+            });
+
+            rows.push([...currentRow]);
+            currentRow = [{ ...screenshot, index, scaledWidth, aspectRatio }];
+            currentRowWidth = scaledWidth;
+          }
+        });
+
+        // Обрабатываем последнюю строку
+        if (currentRow.length > 0) {
+          const totalGaps = (currentRow.length - 1) * gap;
+          const availableWidth = containerWidth - totalGaps;
+          const scale = Math.min(1, availableWidth / currentRowWidth);
+
+          currentRow.forEach(img => {
+            img.width = Math.floor(img.scaledWidth * scale);
+            img.height = Math.floor(targetRowHeight * scale);
+          });
+
+          rows.push(currentRow);
+        }
+
+        return rows.flat();
+      }
+
+      async function loadScreenshots(searchQuery = null) {
+        try {
+          let url = `/api/albums/${currentAlbumId}/screenshots?sort=${currentSort}`;
+          if (searchQuery) {
+            url += `&search=${encodeURIComponent(searchQuery)}`;
+          }
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('Failed to load screenshots');
+
+          const screenshots = await res.json();
+          galleryScreenshots = screenshots;
+          const grid = document.getElementById('screenshots-grid');
+          const empty = document.getElementById('screenshots-empty');
+
+          if (screenshots.length === 0) {
+            grid.style.display = 'none';
+            empty.style.display = 'block';
+            return;
+          }
+
+          grid.style.display = 'flex';
+          empty.style.display = 'none';
+
+          const isOwner = currentUserId && currentUserId == albumOwnerId;
+
+          // Вычисляем адаптивный layout
+          const containerWidth = grid.offsetWidth || 1200;
+          const layoutImages = calculateImageLayout(screenshots, containerWidth, 300);
+
+          grid.innerHTML = layoutImages.map((screenshot) => {
+            const deleteButton = isOwner ? `
+              <div class="screenshot-actions">
+                <button class="screenshot-action-btn" onclick="event.stopPropagation(); deleteScreenshot(${screenshot.id});">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            ` : '';
+
+            return `
+              <div class="screenshot-card" id="screenshot-${screenshot.id}" data-screenshot-id="${screenshot.id}"
+                   style="width: ${screenshot.width}px; height: ${screenshot.height}px;"
+                   onclick="handleScreenshotClick(${screenshot.id}, ${screenshot.index})">
+                <div class="screenshot-check-icon"><i class="fa-solid fa-check"></i></div>
+                <img src="${screenshot.thumbnail_url || screenshot.file_url}" alt="Screenshot" class="screenshot-img" />
+                ${deleteButton}
+              </div>
+            `;
+          }).join('');
+
+          // Показываем кнопку "Выбрать" если это владелец и есть скриншоты
+          if (isOwner && screenshots.length > 0) {
+            document.getElementById('btn-select-mode').style.display = selectionMode ? 'none' : 'inline-flex';
+          }
+        } catch (e) {
+          console.error('Error loading screenshots:', e);
+        }
+      }
+
+      document.getElementById('btn-upload').addEventListener('click', () => {
+        document.getElementById('file-input').click();
+      });
+
+      document.getElementById('file-input').addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        if (files.length > 15) {
+          alert('Можно загрузить максимум 15 файлов за раз');
+          return;
+        }
+
+        // Проверка размера файлов (24 МП)
+        const MAX_SIZE = 24 * 1024 * 1024;
+        const invalidFiles = files.filter(f => f.size > MAX_SIZE);
+        if (invalidFiles.length > 0) {
+          alert('Некоторые файлы превышают 24 МБ');
+          return;
+        }
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('screenshots', file));
+
+        try {
+          document.getElementById('upload-progress').classList.add('active');
+          document.getElementById('progress-fill').style.width = '10%';
+
+          const res = await fetch(`/api/albums/${currentAlbumId}/screenshots`, {
+            method: 'POST',
+            body: formData
+          });
+
+          document.getElementById('progress-fill').style.width = '100%';
+
+          if (!res.ok) throw new Error('Upload failed');
+
+          setTimeout(() => {
+            document.getElementById('upload-progress').classList.remove('active');
+            document.getElementById('progress-fill').style.width = '0%';
+            e.target.value = '';
+            loadAlbumData();
+            loadScreenshots();
+          }, 500);
+        } catch (err) {
+          console.error('Upload error:', err);
+          alert('Ошибка загрузки файлов');
+          document.getElementById('upload-progress').classList.remove('active');
+        }
+      });
+
+      async function deleteScreenshot(screenshotId) {
+        if (!confirm('Удалить этот скриншот?')) return;
+
+        try {
+          const res = await fetch(`/api/screenshots/${screenshotId}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Delete failed');
+
+          loadAlbumData();
+          loadScreenshots();
+        } catch (e) {
+          console.error('Error deleting screenshot:', e);
+          alert('Ошибка удаления скриншота');
+        }
+      }
+
+      function handleScreenshotClick(id, index) {
+        if (selectionMode) {
+          // В режиме выбора переключаем состояние
+          const card = document.getElementById(`screenshot-${id}`);
+          if (selectedScreenshots.has(id)) {
+            selectedScreenshots.delete(id);
+            card.classList.remove('selected');
+          } else {
+            selectedScreenshots.add(id);
+            card.classList.add('selected');
+          }
+          // Показать кнопку установки обложки если выбран ровно 1 скриншот
+          document.getElementById('btn-set-cover').style.display = selectedScreenshots.size === 1 ? 'block' : 'none';
+        } else {
+          // Обычный режим - открываем галерею
+          openGallery(index);
+        }
+      }
+
+      function toggleScreenshotSelection(id) {
+        handleScreenshotClick(id, 0);
+      }
+
+      document.getElementById('btn-set-cover').addEventListener('click', async () => {
+        if (selectedScreenshots.size !== 1) return;
+
+        const screenshotId = Array.from(selectedScreenshots)[0];
+
+        try {
+          const res = await fetch(`/api/albums/${currentAlbumId}/set-cover/${screenshotId}`, {
+            method: 'POST'
+          });
+
+          if (!res.ok) throw new Error('Failed to set cover');
+
+          alert('Обложка установлена');
+          selectedScreenshots.clear();
+
+          // Убираем выделение
+          document.querySelectorAll('.screenshot-card.selected').forEach(card => {
+            card.classList.remove('selected');
+            const checkbox = card.querySelector('.screenshot-checkbox');
+            if (checkbox) checkbox.checked = false;
+          });
+
+          document.getElementById('btn-set-cover').style.display = 'none';
+        } catch (e) {
+          console.error('Error setting cover:', e);
+          alert('Ошибка установки обложки');
+        }
+      });
+
+      // Gallery viewer functions
+      function openGallery(index) {
+        if (selectionMode) return;
+
+        currentGalleryIndex = index;
+        updateGalleryView();
+        document.getElementById('gallery-viewer').classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeGallery() {
+        document.getElementById('gallery-viewer').classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      function navigateGallery(direction) {
+        currentGalleryIndex += direction;
+        if (currentGalleryIndex < 0) currentGalleryIndex = 0;
+        if (currentGalleryIndex >= galleryScreenshots.length) currentGalleryIndex = galleryScreenshots.length - 1;
+        updateGalleryView();
+      }
+
+      function updateGalleryView() {
+        const screenshot = galleryScreenshots[currentGalleryIndex];
+        document.getElementById('gallery-image').src = screenshot.file_url;
+        document.getElementById('gallery-counter').textContent = `${currentGalleryIndex + 1} / ${galleryScreenshots.length}`;
+
+        // Update navigation buttons
+        document.getElementById('gallery-prev').disabled = currentGalleryIndex === 0;
+        document.getElementById('gallery-next').disabled = currentGalleryIndex === galleryScreenshots.length - 1;
+      }
+
+      // Close gallery on background click
+      document.getElementById('gallery-viewer').addEventListener('click', (e) => {
+        if (e.target.id === 'gallery-viewer') {
+          closeGallery();
+        }
+      });
+
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        const viewer = document.getElementById('gallery-viewer');
+        if (!viewer.classList.contains('open')) return;
+
+        if (e.key === 'Escape') {
+          closeGallery();
+        } else if (e.key === 'ArrowLeft') {
+          navigateGallery(-1);
+        } else if (e.key === 'ArrowRight') {
+          navigateGallery(1);
+        }
+      });
+
+      // Mouse wheel navigation
+      document.getElementById('gallery-viewer').addEventListener('wheel', (e) => {
+        const viewer = document.getElementById('gallery-viewer');
+        if (!viewer.classList.contains('open')) return;
+
+        e.preventDefault();
+        if (e.deltaY > 0) {
+          // Scroll down = next image
+          navigateGallery(1);
+        } else if (e.deltaY < 0) {
+          // Scroll up = previous image
+          navigateGallery(-1);
+        }
+      }, { passive: false });
+
+      // Сортировка
+      document.getElementById('sort-new').addEventListener('click', () => {
+        currentSort = 'new';
+        document.getElementById('sort-new').classList.add('active');
+        document.getElementById('sort-new').style.background = 'var(--accent-blue)';
+        document.getElementById('sort-new').style.color = 'white';
+        document.getElementById('sort-new').style.border = 'none';
+
+        document.getElementById('sort-old').classList.remove('active');
+        document.getElementById('sort-old').style.background = 'var(--bg-card)';
+        document.getElementById('sort-old').style.color = 'var(--text-main)';
+        document.getElementById('sort-old').style.border = '1px solid var(--border-color)';
+
+        loadScreenshots();
+      });
+
+      document.getElementById('sort-old').addEventListener('click', () => {
+        currentSort = 'old';
+        document.getElementById('sort-old').classList.add('active');
+        document.getElementById('sort-old').style.background = 'var(--accent-blue)';
+        document.getElementById('sort-old').style.color = 'white';
+        document.getElementById('sort-old').style.border = 'none';
+
+        document.getElementById('sort-new').classList.remove('active');
+        document.getElementById('sort-new').style.background = 'var(--bg-card)';
+        document.getElementById('sort-new').style.color = 'var(--text-main)';
+        document.getElementById('sort-new').style.border = '1px solid var(--border-color)';
+
+        loadScreenshots();
+      });
+
+      // Режим выбора
+      document.getElementById('btn-select-mode').addEventListener('click', () => {
+        selectionMode = true;
+        document.getElementById('btn-select-mode').style.display = 'none';
+        document.getElementById('btn-cancel-selection').style.display = 'inline-flex';
+        document.getElementById('btn-delete-selected').style.display = 'inline-flex';
+
+        // Добавляем класс selection-mode ко всем карточкам
+        document.querySelectorAll('.screenshot-card').forEach(card => {
+          card.classList.add('selection-mode');
+        });
+      });
+
+      // Отменить выбор
+      document.getElementById('btn-cancel-selection').addEventListener('click', () => {
+        selectionMode = false;
+        selectedScreenshots.clear();
+
+        document.getElementById('btn-select-mode').style.display = 'inline-flex';
+        document.getElementById('btn-cancel-selection').style.display = 'none';
+        document.getElementById('btn-delete-selected').style.display = 'none';
+
+        // Убираем класс selection-mode и снимаем выделение
+        document.querySelectorAll('.screenshot-card').forEach(card => {
+          card.classList.remove('selection-mode');
+          card.classList.remove('selected');
+        });
+      });
+
+      // Удалить выбранные
+      document.getElementById('btn-delete-selected').addEventListener('click', async () => {
+        if (selectedScreenshots.size === 0) {
+          alert('Выберите скриншоты для удаления');
+          return;
+        }
+
+        if (!confirm(`Удалить выбранные скриншоты (${selectedScreenshots.size})?`)) return;
+
+        try {
+          const deletePromises = Array.from(selectedScreenshots).map(id =>
+            fetch(`/api/screenshots/${id}`, { method: 'DELETE' })
+          );
+
+          await Promise.all(deletePromises);
+
+          selectedScreenshots.clear();
+          selectionMode = false;
+
+          document.getElementById('btn-select-mode').style.display = 'inline-flex';
+          document.getElementById('btn-cancel-selection').style.display = 'none';
+          document.getElementById('btn-delete-selected').style.display = 'none';
+
+          await loadAlbumData();
+          await loadScreenshots();
+        } catch (e) {
+          console.error('Error deleting screenshots:', e);
+          alert('Ошибка при удалении скриншотов');
+        }
+      });
+
+      // Drag and Drop функциональность
+      let dragCounter = 0;
+
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        document.body.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      document.body.addEventListener('dragenter', (e) => {
+        dragCounter++;
+        if (currentUserId && currentUserId == albumOwnerId) {
+          document.getElementById('drag-drop-overlay').classList.add('active');
+        }
+      });
+
+      document.body.addEventListener('dragleave', (e) => {
+        dragCounter--;
+        if (dragCounter === 0) {
+          document.getElementById('drag-drop-overlay').classList.remove('active');
+        }
+      });
+
+      document.body.addEventListener('drop', async (e) => {
+        dragCounter = 0;
+        document.getElementById('drag-drop-overlay').classList.remove('active');
+
+        if (!currentUserId || currentUserId != albumOwnerId) return;
+
+        const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+
+        if (files.length === 0) {
+          alert('Пожалуйста, перетащите изображения');
+          return;
+        }
+
+        if (files.length > 15) {
+          alert('Можно загрузить максимум 15 файлов за раз');
+          return;
+        }
+
+        const MAX_SIZE = 24 * 1024 * 1024;
+        const invalidFiles = files.filter(f => f.size > MAX_SIZE);
+        if (invalidFiles.length > 0) {
+          alert('Некоторые файлы превышают 24 МБ');
+          return;
+        }
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('screenshots', file));
+
+        try {
+          document.getElementById('upload-progress').classList.add('active');
+          document.getElementById('progress-fill').style.width = '10%';
+
+          const res = await fetch(`/api/albums/${currentAlbumId}/screenshots`, {
+            method: 'POST',
+            body: formData
+          });
+
+          document.getElementById('progress-fill').style.width = '100%';
+
+          if (!res.ok) throw new Error('Upload failed');
+
+          setTimeout(() => {
+            document.getElementById('upload-progress').classList.remove('active');
+            document.getElementById('progress-fill').style.width = '0%';
+            loadAlbumData();
+            loadScreenshots();
+          }, 500);
+        } catch (err) {
+          console.error('Upload error:', err);
+          alert('Ошибка загрузки файлов');
+          document.getElementById('upload-progress').classList.remove('active');
+        }
+      });
+
+      // Функция поиска скриншотов
+      window.searchScreenshots = function(query) {
+        loadScreenshots(query);
+      };
+    </script>
+  </body>
+</html>

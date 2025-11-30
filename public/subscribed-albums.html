@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Альбомы авторов - Game Screen Hub</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%234683d9'/%3E%3Ctext x='50' y='70' font-family='Arial, sans-serif' font-size='45' font-weight='bold' fill='white' text-anchor='middle'%3EGSH%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .albums-page-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+      }
+
+      .albums-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      .albums-page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+
+      .btn-create-album {
+        background-color: var(--accent-blue);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+      }
+
+      .btn-create-album:hover {
+        background-color: var(--accent-blue-hover);
+      }
+
+      .albums-page-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      .album-page-card {
+        background: var(--bg-card);
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.2s;
+        position: relative;
+      }
+
+      .album-page-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .album-page-cover-wrapper {
+        position: relative;
+        aspect-ratio: 12/12;
+        background: var(--bg-body);
+        overflow: hidden;
+      }
+
+      .album-page-cover {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .album-page-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+        color: var(--text-secondary);
+        font-size: 48px;
+      }
+
+      .album-page-body {
+        padding: 15px;
+      }
+
+      .album-page-title-text {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 8px;
+      }
+
+      .album-page-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      .album-page-actions {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        gap: 8px;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .album-page-card:hover .album-page-actions {
+        opacity: 1;
+      }
+
+      .album-action-btn {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+      }
+
+      .album-action-btn:hover {
+        background: rgba(0, 0, 0, 0.9);
+      }
+
+      .album-action-btn.delete:hover {
+        background: #e74c3c;
+      }
+
+      /* Модальное окно */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 200;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-overlay.active {
+        display: flex;
+      }
+
+      .modal-content {
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 500px;
+        width: 90%;
+      }
+
+      .modal-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-main);
+        margin-bottom: 8px;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 12px;
+        background: var(--bg-body);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-main);
+        font-size: 14px;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .btn-modal {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+
+      .btn-modal:hover {
+        opacity: 0.8;
+      }
+
+      .btn-modal-cancel {
+        background: var(--bg-body);
+        color: var(--text-main);
+      }
+
+      .btn-modal-submit {
+        background: var(--accent-blue);
+        color: white;
+      }
+
+      .albums-empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+      }
+
+      .albums-empty-state i {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.3;
+        display: block;
+      }
+
+      .albums-empty-state h3 {
+        font-size: 20px;
+        margin-bottom: 10px;
+        color: var(--text-main);
+      }
+
+      .album-author-badge {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .albums-sort-panel {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .albums-sort-label {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-right: 10px;
+      }
+
+      .albums-sort-btn {
+        background: var(--bg-card);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s;
+      }
+
+      .albums-sort-btn:hover {
+        background: var(--bg-body);
+      }
+
+      .albums-sort-btn.active {
+        background: var(--accent-blue);
+        color: white;
+        border-color: var(--accent-blue);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-container">
+        <a href="index.html" class="logo">GSH</a>
+        <button class="btn-back-header" id="btn-back-header" style="display: none;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="header-actions">
+          <div class="search-wrapper" id="search-wrapper">
+            <input type="text" class="search-input-dynamic" id="header-search-input" placeholder="Поиск..." />
+            <button class="search-btn-icon" id="search-trigger">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </div>
+          <button class="notification-bell" id="notification-bell" style="display: none;">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+          </button>
+          <div id="auth-container" style="display: flex; align-items: center; gap: 15px"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="notifications-modal" id="notifications-modal">
+      <div class="notifications-header">
+        <h3>Уведомления</h3>
+        <button class="mark-all-read-btn" id="mark-all-read-btn">Отметить все как прочитанные</button>
+      </div>
+      <div class="notifications-list" id="notifications-list"></div>
+    </div>
+
+    <div class="albums-page-container">
+      <div class="albums-page-header">
+        <h1 class="albums-page-title">Альбомы авторов <span id="albums-count" style="color: var(--text-secondary); font-size: 20px; font-weight: 400;">(0)</span></h1>
+      </div>
+
+      <div class="albums-sort-panel">
+        <span class="albums-sort-label">Сортировка:</span>
+        <button id="sort-new" class="albums-sort-btn active">Новые</button>
+        <button id="sort-old" class="albums-sort-btn">Старые</button>
+        <button id="sort-alpha" class="albums-sort-btn">По алфавиту</button>
+      </div>
+
+      <div id="albums-page-grid" class="albums-page-grid"></div>
+
+      <div id="albums-empty" class="albums-empty-state" style="display: none;">
+        <i class="fa-regular fa-images"></i>
+        <h3>Нет подписанных альбомов</h3>
+        <p>Подпишитесь на интересующие вас альбомы авторов</p>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+      let currentUserId = null;
+      let currentAlbumSort = 'new';
+      let currentSearchQuery = null;
+
+      // Инициализация страницы
+      document.addEventListener('DOMContentLoaded', async () => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+          window.location.href = 'index.html';
+          return;
+        }
+
+        currentUserId = user.id;
+
+        // Загружаем подписанные альбомы текущего пользователя
+        loadAlbums(currentUserId, false);
+
+        // Обработчики кнопок сортировки
+        document.getElementById('sort-new').addEventListener('click', () => {
+          setSortActive('sort-new');
+          loadAlbums(currentUserId, false, currentSearchQuery, 'new');
+        });
+
+        document.getElementById('sort-old').addEventListener('click', () => {
+          setSortActive('sort-old');
+          loadAlbums(currentUserId, false, currentSearchQuery, 'old');
+        });
+
+        document.getElementById('sort-alpha').addEventListener('click', () => {
+          setSortActive('sort-alpha');
+          loadAlbums(currentUserId, false, currentSearchQuery, 'alpha');
+        });
+      });
+
+      // Загрузка альбомов
+      async function loadAlbums(userId, isOwner, searchQuery = null, sortType = 'new') {
+        try {
+          // Сохраняем текущее состояние
+          currentAlbumSort = sortType;
+          currentSearchQuery = searchQuery;
+
+          let url = `/api/subscribed-albums/${userId}?sort=${sortType}`;
+          if (searchQuery) {
+            url += `&search=${encodeURIComponent(searchQuery)}`;
+          }
+          console.log('Loading subscribed albums with URL:', url);
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('Failed to load subscribed albums');
+
+          const albums = await res.json();
+          console.log('Loaded albums:', albums);
+
+          const grid = document.getElementById('albums-page-grid');
+          const empty = document.getElementById('albums-empty');
+
+          // Обновляем счетчик альбомов
+          document.getElementById('albums-count').textContent = `(${albums.length})`;
+
+          if (albums.length === 0) {
+            grid.style.display = 'none';
+            empty.style.display = 'block';
+            return;
+          }
+
+          grid.style.display = 'grid';
+          empty.style.display = 'none';
+
+          // Очищаем сетку перед обновлением
+          grid.innerHTML = '';
+
+          // Небольшая задержка для перерисовки
+          await new Promise(resolve => setTimeout(resolve, 10));
+
+          grid.innerHTML = albums.map((album, index) => {
+            const coverImage = album.cover_url
+              ? `<img src="${album.cover_url}" alt="${album.title}" class="album-page-cover" loading="lazy" />`
+              : `<div class="album-page-placeholder"><i class="fa-regular fa-images"></i></div>`;
+
+            const hasNewContent = album.new_screenshots_count > 0;
+            const avatarClass = `album-author-avatar${hasNewContent ? ' has-new-content' : ''}`;
+
+            const authorAvatar = album.author_avatar
+              ? `<img src="${album.author_avatar}" alt="${album.author_name}" class="${avatarClass}" />`
+              : `<div class="album-author-avatar-placeholder${hasNewContent ? ' has-new-content' : ''}"><i class="fa-solid fa-user"></i></div>`;
+
+            const authorInfo = album.author_name
+              ? `<div class="album-author-info" onclick="event.stopPropagation(); window.location.href='profile.html?id=${album.user_id}'">
+                   ${authorAvatar}
+                   <span class="album-author-name">${album.author_name}</span>
+                 </div>`
+              : '';
+
+            return `
+              <div class="album-page-card" data-album-id="${album.id}" data-sort-index="${index}" onclick="openAlbum(${album.id})">
+                <div class="album-page-cover-wrapper">
+                  ${coverImage}
+                  ${authorInfo}
+                </div>
+                <div class="album-page-body">
+                  <div class="album-page-title-text">${album.title}</div>
+                  <div class="album-page-meta">
+                    <span><i class="fa-regular fa-image"></i> ${album.screenshot_count || 0} фото</span>
+                    <span><i class="fa-regular fa-eye"></i> ${album.views || 0}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } catch (e) {
+          console.error('Error loading albums:', e);
+        }
+      }
+
+      // Открыть альбом (переход на страницу с детал)
+      function openAlbum(albumId) {
+        window.location.href = `album-view.html?id=${albumId}`;
+      }
+
+      // Функция поиска альбомов
+      window.searchAlbums = function(query) {
+        loadAlbums(currentUserId, false, query, currentAlbumSort);
+      };
+
+      // Функция для установки активной кнопки сортировки
+      function setSortActive(buttonId) {
+        document.querySelectorAll('.albums-sort-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        document.getElementById(buttonId).classList.add('active');
+      }
+    </script>
+  </body>
+</html>

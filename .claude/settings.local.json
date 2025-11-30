@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(done)",
+      "Bash(npm install sharp)",
+      "Bash(node generate-thumbnails.js:*)",
+      "Bash(node:*)",
+      "Bash(mysql -u root -p12ahra29power12 -e \"DROP TABLE IF EXISTS gsh_db.notifications\")",
+      "Bash(mysql:*)",
+      "Bash(\"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe\" -u root -p12ahra29power12 -e \"DESCRIBE gsh_db.screenshots\")",
+      "Bash(\"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe\" -u root -p12ahra29power12 -e \"CREATE TABLE IF NOT EXISTS gsh_db.album_subscriptions (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, album_id INT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY unique_subscription (user_id, album_id), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (album_id) REFERENCES albums(id) ON DELETE CASCADE)\")",
+      "Bash(taskkill:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(findstr:*)",
+      "Bash(test:*)",
+      "Bash(dir /s /b *.html *.ejs *.pug)",
+      "Bash(\"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe\" -u root -p12ahra29power12 -e \"ALTER TABLE gsh_db.screenshots ADD COLUMN width INT, ADD COLUMN height INT\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

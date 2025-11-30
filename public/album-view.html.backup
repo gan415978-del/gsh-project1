@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Альбом - Game Screen Hub</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%234683d9'/%3E%3Ctext x='50' y='70' font-family='Arial, sans-serif' font-size='45' font-weight='bold' fill='white' text-anchor='middle'%3EGSH%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .album-view-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+      }
+
+      .album-view-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: var(--bg-card);
+        padding: 20px;
+        border-radius: 12px;
+      }
+
+      .album-view-info h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 8px;
+      }
+
+      .album-view-meta {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+        color: var(--text-secondary);
+      }
+
+      .album-view-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn-upload {
+        background-color: var(--accent-blue);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+      }
+
+      .btn-upload:hover {
+        background-color: var(--accent-blue-hover);
+      }
+
+      .btn-set-cover {
+        background: var(--bg-body);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .btn-set-cover:hover {
+        background: var(--bg-card-hover);
+      }
+
+      .screenshots-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+      }
+
+      .screenshot-card {
+        position: relative;
+        aspect-ratio: 16/9;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        background: var(--bg-body);
+        transition: transform 0.2s;
+      }
+
+      .screenshot-card:hover {
+        transform: scale(1.03);
+      }
+
+      .screenshot-card.selected {
+        outline: 3px solid var(--accent-blue);
+      }
+
+      .screenshot-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .screenshot-actions {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .screenshot-card:hover .screenshot-actions {
+        opacity: 1;
+      }
+
+      .screenshot-action-btn {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-left: 5px;
+        transition: background 0.2s;
+      }
+
+      .screenshot-action-btn:hover {
+        background: rgba(231, 76, 60, 0.9);
+      }
+
+      .screenshot-checkbox {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+      }
+
+      .screenshots-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+      }
+
+      .screenshots-empty i {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.3;
+        display: block;
+      }
+
+      .upload-progress {
+        background: var(--bg-card);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .upload-progress.active {
+        display: block;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: var(--bg-body);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: var(--accent-blue);
+        transition: width 0.3s;
+      }
+
+      .lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 300;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .lightbox.active {
+        display: flex;
+      }
+
+      .lightbox-img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+      }
+
+      .lightbox-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .lightbox-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-container">
+        <a href="index.html" class="logo">GSH</a>
+        <button class="btn-back-header" id="btn-back-header" onclick="window.location.href='albums.html'" style="display: flex;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="header-actions">
+          <div class="search-wrapper" id="search-wrapper">
+            <input type="text" class="search-input-dynamic" id="header-search-input" placeholder="Поиск..." />
+            <button class="search-btn-icon" id="search-trigger">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </div>
+          <button class="notification-bell" id="notification-bell" style="display: none;">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+          </button>
+          <div id="auth-container" style="display: flex; align-items: center; gap: 15px"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="notifications-modal" id="notifications-modal">
+      <div class="notifications-header">
+        <h3>Уведомления</h3>
+        <button class="mark-all-read-btn" id="mark-all-read-btn">Отметить все как прочитанные</button>
+      </div>
+      <div class="notifications-list" id="notifications-list"></div>
+    </div>
+
+    <div class="album-view-container">
+      <div class="album-view-header">
+        <div class="album-view-info">
+          <h1 id="album-title">Альбом</h1>
+          <div class="album-view-meta">
+            <span><i class="fa-regular fa-image"></i> <span id="screenshot-count">0</span> фото</span>
+            <span><i class="fa-regular fa-eye"></i> <span id="album-views">0</span> просмотров</span>
+          </div>
+        </div>
+        <div class="album-view-actions" id="owner-actions" style="display: none;">
+          <button class="btn-set-cover" id="btn-set-cover" style="display: none;">Установить обложку</button>
+          <button class="btn-upload" id="btn-upload">
+            <i class="fa-solid fa-upload"></i>
+            Загрузить фото
+          </button>
+        </div>
+      </div>
+
+      <div class="upload-progress" id="upload-progress">
+        <div style="margin-bottom: 10px; color: var(--text-main);">Загрузка файлов...</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div id="screenshots-grid" class="screenshots-grid"></div>
+
+      <div id="screenshots-empty" class="screenshots-empty" style="display: none;">
+        <i class="fa-regular fa-images"></i>
+        <h3>В альбоме пока нет скриншотов</h3>
+        <p>Загрузите первый скриншот</p>
+      </div>
+    </div>
+
+    <input type="file" id="file-input" accept="image/*" multiple style="display: none;" />
+
+    <!-- Lightbox для просмотра изображений -->
+    <div class="lightbox" id="lightbox">
+      <button class="lightbox-close" onclick="closeLightbox()">×</button>
+      <img id="lightbox-img" class="lightbox-img" src="" alt="" />
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+      let currentAlbumId = null;
+      let currentUserId = null;
+      let albumOwnerId = null;
+      let selectedScreenshots = new Set();
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+          window.location.href = 'index.html';
+          return;
+        }
+
+        currentUserId = user.id;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        currentAlbumId = urlParams.get('id');
+
+        if (!currentAlbumId) {
+          alert('ID альбома не указан');
+          window.location.href = 'albums.html';
+          return;
+        }
+
+        await loadAlbumData();
+        await loadScreenshots();
+      });
+
+      async function loadAlbumData() {
+        try {
+          const res = await fetch(`/api/album/${currentAlbumId}`);
+          if (!res.ok) throw new Error('Failed to load album');
+
+          const album = await res.json();
+
+          document.getElementById('album-title').textContent = album.title;
+          document.getElementById('screenshot-count').textContent = album.screenshot_count || 0;
+          document.getElementById('album-views').textContent = album.views || 0;
+
+          albumOwnerId = album.user_id;
+
+          // Увеличиваем просмотры
+          await fetch(`/api/albums/${currentAlbumId}/view`, { method: 'POST' });
+
+          // Показываем кнопки управления если это владелец
+          if (currentUserId && currentUserId == albumOwnerId) {
+            document.getElementById('owner-actions').style.display = 'flex';
+          }
+        } catch (e) {
+          console.error('Error loading album:', e);
+        }
+      }
+
+      async function loadScreenshots() {
+        try {
+          const res = await fetch(`/api/albums/${currentAlbumId}/screenshots`);
+          if (!res.ok) throw new Error('Failed to load screenshots');
+
+          const screenshots = await res.json();
+          const grid = document.getElementById('screenshots-grid');
+          const empty = document.getElementById('screenshots-empty');
+
+          if (screenshots.length === 0) {
+            grid.style.display = 'none';
+            empty.style.display = 'block';
+            return;
+          }
+
+          grid.style.display = 'grid';
+          empty.style.display = 'none';
+
+          grid.innerHTML = screenshots.map(screenshot => `
+            <div class="screenshot-card" id="screenshot-${screenshot.id}">
+              <input type="checkbox" class="screenshot-checkbox" data-id="${screenshot.id}" onchange="toggleScreenshotSelection(${screenshot.id})" />
+              <img src="${screenshot.thumbnail_url || screenshot.file_url}" alt="Screenshot" class="screenshot-img" onclick="openLightbox('${screenshot.file_url}')" />
+              <div class="screenshot-actions">
+                <button class="screenshot-action-btn" onclick="event.stopPropagation(); deleteScreenshot(${screenshot.id});">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          `).join('');
+        } catch (e) {
+          console.error('Error loading screenshots:', e);
+        }
+      }
+
+      document.getElementById('btn-upload').addEventListener('click', () => {
+        document.getElementById('file-input').click();
+      });
+
+      document.getElementById('file-input').addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        if (files.length > 15) {
+          alert('Можно загрузить максимум 15 файлов за раз');
+          return;
+        }
+
+        // Проверка размера файлов (24 МП)
+        const MAX_SIZE = 24 * 1024 * 1024;
+        const invalidFiles = files.filter(f => f.size > MAX_SIZE);
+        if (invalidFiles.length > 0) {
+          alert('Некоторые файлы превышают 24 МБ');
+          return;
+        }
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('screenshots', file));
+
+        try {
+          document.getElementById('upload-progress').classList.add('active');
+          document.getElementById('progress-fill').style.width = '10%';
+
+          const res = await fetch(`/api/albums/${currentAlbumId}/screenshots`, {
+            method: 'POST',
+            body: formData
+          });
+
+          document.getElementById('progress-fill').style.width = '100%';
+
+          if (!res.ok) throw new Error('Upload failed');
+
+          setTimeout(() => {
+            document.getElementById('upload-progress').classList.remove('active');
+            document.getElementById('progress-fill').style.width = '0%';
+            e.target.value = '';
+            loadAlbumData();
+            loadScreenshots();
+          }, 500);
+        } catch (err) {
+          console.error('Upload error:', err);
+          alert('Ошибка загрузки файлов');
+          document.getElementById('upload-progress').classList.remove('active');
+        }
+      });
+
+      async function deleteScreenshot(screenshotId) {
+        if (!confirm('Удалить этот скриншот?')) return;
+
+        try {
+          const res = await fetch(`/api/screenshots/${screenshotId}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Delete failed');
+
+          loadAlbumData();
+          loadScreenshots();
+        } catch (e) {
+          console.error('Error deleting screenshot:', e);
+          alert('Ошибка удаления скриншота');
+        }
+      }
+
+      function toggleScreenshotSelection(id) {
+        const card = document.getElementById(`screenshot-${id}`);
+        const checkbox = card.querySelector('.screenshot-checkbox');
+
+        if (checkbox.checked) {
+          selectedScreenshots.add(id);
+          card.classList.add('selected');
+        } else {
+          selectedScreenshots.delete(id);
+          card.classList.remove('selected');
+        }
+
+        // Показать кнопку установки обложки если выбран ровно 1 скриншот
+        document.getElementById('btn-set-cover').style.display = selectedScreenshots.size === 1 ? 'block' : 'none';
+      }
+
+      document.getElementById('btn-set-cover').addEventListener('click', async () => {
+        if (selectedScreenshots.size !== 1) return;
+
+        const screenshotId = Array.from(selectedScreenshots)[0];
+        const card = document.getElementById(`screenshot-${screenshotId}`);
+        const img = card.querySelector('.screenshot-img');
+        const coverUrl = img.src.replace('/thumbnails/thumb_', '/');
+
+        try {
+          const res = await fetch(`/api/albums/${currentAlbumId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coverUrl })
+          });
+
+          if (!res.ok) throw new Error('Failed to set cover');
+
+          alert('Обложка установлена');
+          selectedScreenshots.clear();
+          card.classList.remove('selected');
+          card.querySelector('.screenshot-checkbox').checked = false;
+          document.getElementById('btn-set-cover').style.display = 'none';
+        } catch (e) {
+          console.error('Error setting cover:', e);
+          alert('Ошибка установки обложки');
+        }
+      });
+
+      function openLightbox(imageSrc) {
+        document.getElementById('lightbox-img').src = imageSrc;
+        document.getElementById('lightbox').classList.add('active');
+      }
+
+      function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active');
+      }
+
+      document.getElementById('lightbox').addEventListener('click', (e) => {
+        if (e.target.id === 'lightbox') {
+          closeLightbox();
+        }
+      });
+    </script>
+  </body>
+</html>
