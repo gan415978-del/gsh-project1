@@ -87,12 +87,13 @@ async function validateImageDimensions(filePath) {
   }
 }
 
-// --- БАЗА ДАННЫХ ---
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "12ahra29power12", // Твой пароль
-  database: "gsh_db",
+// Настройки базы данных
+const db = mysql.createPool({
+  host: process.env.my-screenshot-db-gan415978-2ee1.k.aivencloud.com,
+  user: process.env.avnadmin,
+  password: process.env.AVNS_1ccnxbxAyOupWWnz-wo,
+  database: process.env.defaultdb,
+  port: process.env.20214,
 });
 
 db.connect((err) => {
@@ -1872,6 +1873,4 @@ function createNotification(userId, actorId, postId, type, callback) {
 }
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => { ... });

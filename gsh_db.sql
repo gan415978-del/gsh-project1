@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
--- Host: localhost    Database: gsh_db
+-- Host: my-screenshot-db-gan415978-2ee1.k.aivencloud.com    Database: defaultdb
 -- ------------------------------------------------------
 -- Server version	9.1.0
 

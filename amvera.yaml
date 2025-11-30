@@ -1,0 +1,12 @@
+meta:
+  environment: node
+  toolchain:
+    name: npm
+    version: 20
+build:
+  requirements: package.json
+run:
+  command: node server.js
+  containerPort: 3000
+  persistence:
+    - mountPath: /data
