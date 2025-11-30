@@ -3,7 +3,6 @@ meta:
   toolchain:
     name: npm
     version: 20
-build: {}
 run:
   command: node server.js
   containerPort: 3000
