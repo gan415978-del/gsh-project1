@@ -89,11 +89,11 @@ async function validateImageDimensions(filePath) {
 
 // Настройки базы данных
 const db = mysql.createPool({
-  host: process.env.my-screenshot-db-gan415978-2ee1.k.aivencloud.com,
-  user: process.env.avnadmin,
-  password: process.env.AVNS_1ccnxbxAyOupWWnz-wo,
-  database: process.env.defaultdb,
-  port: process.env.20214,
+  host: process.env.DB_HOST, // Ссылка на переменную в Amvera
+  user: process.env.DB_USER, // Ссылка на переменную в Amvera
+  password: process.env.DB_PASSWORD, // Ссылка на переменную в Amvera
+  database: process.env.DB_NAME, // Ссылка на переменную в Amvera
+  port: process.env.DB_PORT, // Ссылка на переменную в Amvera
 });
 
 db.connect((err) => {
@@ -1873,4 +1873,6 @@ function createNotification(userId, actorId, postId, type, callback) {
 }
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => { ... });
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
